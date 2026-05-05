@@ -1,0 +1,168 @@
+
+\documentclass[aspectratio=169]{beamer}
+\usetheme{Madrid}
+\usecolortheme{seahorse}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{listings}
+\lstset{basicstyle=\ttfamily\small,breaklines=true}
+
+% Increase default font sizes for a PPT-like look
+\setbeamerfont{title}{size=\Huge,series=\bfseries}
+\setbeamerfont{frametitle}{size=\LARGE,series=\bfseries}
+\setbeamerfont{framesubtitle}{size=\large}
+
+\title{Single Cycle Processor}
+\subtitle{Course Project — CE222}
+\author{Your Name}
+\date{\today}
+
+\begin{document}
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+\begin{frame}{Outline}
+  \tableofcontents
+\end{frame}
+
+\section{Introduction}
+\begin{frame}{Project Objectives}
+  \begin{itemize}
+    \item Implement a single-cycle RISC-like processor in Verilog
+    \item Verify functionality with testbenches and waveform inspection
+    \item Demonstrate datapath, control, and memory integration
+    \item Present simulation results and example executions
+  \end{itemize}
+\end{frame}
+
+\section{Architecture}
+\begin{frame}{Top-level Block Diagram}
+  % Replace 'block_diagram.png' with your generated diagram exported from drawing tool
+  \centering
+  \fbox{\parbox{0.85\linewidth}{\centering Missing \texttt{block\textunderscore diagram.png}\\Please add exported diagram here}}
+  \vspace{0.5em}
+  {\small (Insert annotated datapath: IF, ID, EX, MEM, WB)}
+\end{frame}
+
+\begin{frame}{Datapath Overview}
+  \begin{itemize}
+    \item Instruction Fetch: Program Counter, Instruction Memory
+    \item Instruction Decode: Register File, Immediate Generator, Control Unit
+    \item Execute: ALU, ALU Control, MUXes
+    \item Memory Access: Data Memory (load/store)
+    \item Write Back: Register update from ALU or Memory
+  \end{itemize}
+\end{frame}
+
+\section{Modules}
+\begin{frame}{Key Verilog Modules}
+  \begin{itemize}
+    \item \textbf{Instruction Memory:} \texttt{instruction\_memory.v}
+    \item \textbf{Register File:} \texttt{register\_file.v}
+    \item \textbf{Program Counter:} \texttt{pc.v}
+    \item \textbf{ALU:} \texttt{alu.v}, \texttt{alu\_control.v}
+    \item \textbf{Control Unit:} \texttt{control.v}
+    \item \textbf{Data Memory:} \texttt{data\_memory.v}
+  \end{itemize}
+  \vspace{0.5em}
+  % Files are located in the \texttt{Single\_Cycle\_Processor} folder of the repository.
+\end{frame}
+
+\begin{frame}{Register File}
+  \begin{itemize}
+    \item 32 registers, synchronous write, asynchronous read
+    \item Ports: read1, read2, write, writeData, writeEnable
+    \item Testbench: \texttt{register\_file\_tb.v} (use to validate read/write semantics)
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{ALU and ALU Control}
+  \begin{itemize}
+    \item ALU supports add, sub, and, or, slt, shifts, etc.
+    \item \texttt{alu\_control.v} maps opcode/funct fields to ALU ops
+    \item Unit-tested with \texttt{test\_alu} in repo
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Control Unit}
+  \begin{itemize}
+    \item Decodes opcode to generate control signals (RegWrite, MemRead, MemWrite, ALUSrc, MemToReg)
+    \item Single-cycle control: all signals valid in one clock cycle per instruction
+    \item File: \texttt{control.v}
+  \end{itemize}
+\end{frame}
+
+\section{Verification}
+\begin{frame}[fragile]{Testbenches and Simulation}
+  \begin{itemize}
+    \item Use \texttt{iverilog}/\texttt{vvp} to simulate and \texttt{gtkwave} to view waveforms
+    \item Primary testbench: \texttt{single\_cycle\_processor\_tb.v}
+    \item Additional benches in repo: \texttt{instruction\_fetch\_tb.v}, \texttt{register\_file\_tb.v}, etc.
+  \end{itemize}
+  \vspace{0.5em}
+  \begin{block}{Suggested Simulation Commands}
+    \begin{verbatim}
+# compile
+iverilog -o simv *.v *_tb.v
+# run
+vvp simv
+# view waveforms (if .vcd produced)
+gtkwave single_cycle_processor.vcd
+    \end{verbatim}
+  \end{block}
+\end{frame}
+
+\begin{frame}{Example Waveforms}
+  \centering
+  % Replace 'waveform_example.png' with actual exported waveform images (PNG)
+  \fbox{\parbox{0.9\linewidth}{\centering Missing \texttt{waveform\textunderscore example.png}\\Export VCD screenshots or PNG here}}
+  \vspace{0.5em}
+  {\small Show instruction execution, PC updates, register writes, memory accesses.}
+\end{frame}
+
+\section{Results}
+\begin{frame}{Functional Results}
+  \begin{itemize}
+    \item Correct execution of sample instruction sequences verified via VCD
+    \item Register read/write and memory load/store validated in testbenches
+    \item Timing: single-cycle latency determined by longest combinational path (ALU + memory)
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Performance / Observations}
+  \begin{itemize}
+    \item Pros: Simple control, easy to reason about, minimal pipeline hazards
+    \item Cons: Single-cycle restricts clock frequency due to long-critical paths
+    \item Potential improvements: pipelining, forwarding, hazard detection
+  \end{itemize}
+\end{frame}
+
+\section{Conclusion}
+\begin{frame}{Conclusion}
+  \begin{itemize}
+    \item Implemented a working single-cycle processor in Verilog
+    \item Verified with testbenches and waveform inspection
+    \item Next steps: add pipeline stages and hazard logic for performance
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Appendix: Files of Interest}
+  \begin{itemize}
+    \item \texttt{single\textunderscore cycle\textunderscore processor.v} -- top-level (Single\textunderscore Cycle\textunderscore Processor folder)
+    \item \texttt{single\textunderscore cycle\textunderscore processor\textunderscore tb.v} -- top-level testbench
+    \item \texttt{instruction\textunderscore memory.v}, \texttt{data\textunderscore memory.v} -- memories
+    \item \texttt{register\textunderscore file.v}, \texttt{alu.v}, \texttt{control.v}, \texttt{pc.v} -- core modules
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{How to Build the Presentation}
+  \begin{itemize}
+    \item Compile: \texttt{pdflatex presentation.tex} (run twice for TOC)
+    \item Include exported PNGs for block diagram and waveforms in the same folder
+    \item Recommended: use Google Slides / PowerPoint export if required
+  \end{itemize}
+\end{frame}
+
+\end{document}

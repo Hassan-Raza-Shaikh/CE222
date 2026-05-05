@@ -1,0 +1,15 @@
+iverilog -o sim design.v testbench.v
+vvp sim
+surfer wave1.vcd
+
+iverilog -o sim instruction_fetch_tb.v instruction_fetch.v inst_mem.v PC.v adder.v
+vvp sim
+surfer if.vcd
+
+iverilog -o sim_dm data_memory_tb.v data_memory.v
+vvp sim_dm
+surfer data_mem.vcd
+
+iverilog -o mem_out memory_32x32.v memory_32x32_tb.v
+vvp mem_out
+
