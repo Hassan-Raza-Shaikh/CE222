@@ -1,0 +1,17 @@
+\frametitle{Testbenches and Simulation}
+\begin{itemize}
+    \item Use \texttt{iverilog}/\texttt{vvp} to simulate and \texttt{gtkwave} to view waveforms
+    \item Primary testbench: \texttt{single\_cycle\_processor\_tb.v}
+    \item Additional benches in repo: \texttt{instruction\_fetch\_tb.v}, \texttt{register\_file\_tb.v}, etc.
+  \end{itemize}
+  \vspace{0.5em}
+  \begin{block}{Suggested Simulation Commands}
+    \begin{verbatim}
+# compile
+iverilog -o simv *.v *_tb.v
+# run
+vvp simv
+# view waveforms (if .vcd produced)
+gtkwave single_cycle_processor.vcd
+    \end{verbatim}
+  \end{block}
