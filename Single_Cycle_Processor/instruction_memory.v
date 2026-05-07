@@ -10,7 +10,7 @@ integer i;
 
 initial begin
     for (i = 0; i < 16; i = i + 1)
-        memory[i] = 32'h00000013;
+        memory[i] = 32'h00000000;
 
     // addi x1, x0, 5  (load 5 into x1)
     memory[0]  = 32'h00500093;
@@ -47,10 +47,10 @@ initial begin
 end
 
 always @(*) begin
-    if (address[31:2] <= 4'd15)
-        instruction = memory[address[31:2]];
+    if (address[31:0] <= 4'd15)
+        instruction = memory[address[31:0]];
     else
-        instruction = 32'h00000013;
+        instruction = 32'h00000000;
 end
 
 endmodule
