@@ -101,7 +101,7 @@ alu_control alu_control_unit (
     .Operation(alu_operation)
 );
 
-mux2  alu_src_mux (
+mux2 alu_src_mux (
     .a(read_data2),
     .b(immediate),
     .sel(ALUSrc),
@@ -125,7 +125,7 @@ data_memory data_memory_unit (
     .read_data(data_read_data)
 );
 
-mux2  mem_to_reg_mux (
+mux2 mem_to_reg_mux (
     .a(alu_result),
     .b(data_read_data),
     .sel(MemtoReg),

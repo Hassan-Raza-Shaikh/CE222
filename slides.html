@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <meta name="author" content="Hassan Raza Shaikh">
+  <meta name="dcterms.date" content="2026-05-08">
+  <title>Single Cycle Processor</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+  <link rel="stylesheet" href="https://unpkg.com/reveal.js@4/dist/reset.css">
+  <link rel="stylesheet" href="https://unpkg.com/reveal.js@4/dist/reveal.css">
+  <style>
+    .reveal .sourceCode {  /* see #7635 */
+      overflow: visible;
+    }
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="https://unpkg.com/reveal.js@4/dist/theme/white.css" id="theme">
+  <link rel="stylesheet" href="custom.css"/>
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+<section id="title-slide">
+  <h1 class="title">Single Cycle Processor</h1>
+  <p class="subtitle">CE222 Course Project</p>
+  <p class="author">Hassan Raza Shaikh</p>
+  <p class="date">2026-05-08</p>
+</section>
+
+<section id="single-cycle-processor" class="slide level1 hero">
+<h1>Single Cycle Processor</h1>
+<p class="subtitle">
+Complete RISC-V inspired CPU executing any instruction in exactly one
+clock cycle
+</p>
+<p class="meta">
+RISC-V | Verilog HDL | CE222 Digital Design
+</p>
+</section>
+<section class="slide level1">
+
+<h2 id="intro-to-single-cycle">Intro to Single Cycle</h2>
+<div class="split">
+<div class="left-panel">
+<h3 id="what-is-it">What is It?</h3>
+<p>A <strong>single-cycle processor</strong> completes every instruction
+in one clock cycle.</p>
+<p><strong>Fetch</strong> → <strong>Decode</strong> →
+<strong>Execute</strong> → <strong>Memory</strong> →
+<strong>Write-back</strong></p>
+<h3 id="why-single-cycle">Why Single Cycle?</h3>
+<ul>
+<li>Straightforward control logic</li>
+<li>No pipelined hazards<br />
+</li>
+<li>Clean, educational datapath</li>
+</ul>
+</div>
+<div class="right-panel">
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode verilog"><code class="sourceCode verilog"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">// All stages in ONE cycle</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="dv">Fetch:</span>   instruction ← mem<span class="op">[</span>PC<span class="op">]</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="dv">Decode:</span>  signals ← opcode</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="dv">Execute:</span> result ← ALU<span class="op">(</span>a<span class="op">,</span>op<span class="op">,</span>b<span class="op">)</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="dv">Memory:</span>  data ← RAM<span class="op">[</span>address<span class="op">]</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="dv">WriteB:</span>  <span class="dt">reg</span><span class="op">[</span>rd<span class="op">]</span> ← result</span></code></pre></div>
+</div>
+</div>
+</section>
+<section class="slide level1">
+
+<h2 id="what-this-processor-can-do">What This Processor Can Do</h2>
+<div class="split">
+<section id="instruction-set" class="left-panel">
+<h3>Instruction Set</h3>
+<p><strong>Arithmetic &amp; Logic</strong> - add, sub - and, or, xor</p>
+<p><strong>Memory Operations</strong> - lw (load word) - sw (store
+word)</p>
+<p><strong>Control Flow</strong> - beq (branch if equal)</p>
+</section>
+<div class="right-panel">
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode verilog"><code class="sourceCode verilog"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">module</span> single_cycle_processor <span class="op">(</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="dt">input</span> clk<span class="op">,</span> reset<span class="op">,</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">output</span> <span class="op">[</span><span class="dv">31</span><span class="op">:</span><span class="dv">0</span><span class="op">]</span> pc_out<span class="op">,</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">output</span> <span class="op">[</span><span class="dv">31</span><span class="op">:</span><span class="dv">0</span><span class="op">]</span> instruction<span class="op">,</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">output</span> <span class="op">[</span><span class="dv">31</span><span class="op">:</span><span class="dv">0</span><span class="op">]</span> alu_result<span class="op">,</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    <span class="dt">output</span> <span class="op">[</span><span class="dv">31</span><span class="op">:</span><span class="dv">0</span><span class="op">]</span> write_back_data<span class="op">,</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    <span class="dt">output</span> <span class="op">[</span><span class="dv">31</span><span class="op">:</span><span class="dv">0</span><span class="op">]</span> read_data1<span class="op">,</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    <span class="dt">output</span> <span class="op">[</span><span class="dv">31</span><span class="op">:</span><span class="dv">0</span><span class="op">]</span> read_data2<span class="op">,</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    <span class="dt">output</span> <span class="op">[</span><span class="dv">31</span><span class="op">:</span><span class="dv">0</span><span class="op">]</span> data_read_data</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="op">);</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="co">// All 32-bit RISC-V signals</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="co">// connected in one cycle</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="dt">wire</span> ALUSrc<span class="op">,</span> MemtoReg<span class="op">;</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="dt">wire</span> RegWrite<span class="op">,</span> MemRead<span class="op">;</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="dt">wire</span> MemWrite<span class="op">,</span> Branch<span class="op">;</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="dt">wire</span> <span class="op">[</span><span class="dv">1</span><span class="op">:</span><span class="dv">0</span><span class="op">]</span> ALUOp<span class="op">;</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a><span class="kw">endmodule</span></span></code></pre></div>
+</div>
+</div>
+</section>
+<section class="slide level1">
+
+<h2 id="component-program-counter-pc">Component: Program Counter
+(PC)</h2>
+<div class="split">
+<div class="left-panel">
+<h3 id="purpose">Purpose</h3>
+<p><strong>Holds</strong> current instruction address<br />
+<strong>Updates</strong> to next PC every cycle</p>
+<h3 id="operation">Operation</h3>
+<p>On each clock edge: - If reset: PC ← 0 - Else: PC ← next address</p>
+</div>
+<div class="right-panel">
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode verilog"><code class="sourceCode verilog"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">module</span> PC<span class="op">(</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="dt">input</span> clk<span class="op">,</span> reset<span class="op">,</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">input</span> <span class="op">[</span><span class="dv">31</span><span class="op">:</span><span class="dv">0</span><span class="op">]</span> PC_in<span class="op">,</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">output</span> <span class="dt">reg</span> <span class="op">[</span><span class="dv">31</span><span class="op">:</span><span class="dv">0</span><span class="op">]</span> PC_out</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="op">);</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="kw">always</span> <span class="op">@(</span><span class="kw">posedge</span> clk <span class="dt">or</span> </span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>         <span class="kw">posedge</span> reset<span class="op">)</span> <span class="kw">begin</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> <span class="op">(</span>reset<span class="op">)</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>        PC_out <span class="op">&lt;=</span> <span class="bn">32&#39;b0</span><span class="op">;</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    <span class="kw">else</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>        PC_out <span class="op">&lt;=</span> PC_in<span class="op">;</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="kw">endmodule</span></span></code></pre></div>
+</div>
+</div>
+</section>
+<section class="slide level1">
+
+<h2 id="component-instruction-memory">Component: Instruction Memory</h2>
+<div class="split">
+<div class="left-panel">
+<h3 id="purpose-1">Purpose</h3>
+<p><strong>Stores</strong> program instructions<br />
+<strong>Outputs</strong> instruction at address combinationally</p>
+<h3 id="features">Features</h3>
+<ul>
+<li>Read-only (ROM)</li>
+<li>32 × 32-bit words</li>
+<li>Address-driven lookup</li>
+<li>No clock dependency</li>
+</ul>
+</div>
+<div class="right-panel">
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode verilog"><code class="sourceCode verilog"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">module</span> instruction_memory <span class="op">(</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    <span class="dt">input</span> <span class="op">[</span><span class="dv">31</span><span class="op">:</span><span class="dv">0</span><span class="op">]</span> address<span class="op">,</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">output</span> <span class="op">[</span><span class="dv">31</span><span class="op">:</span><span class="dv">0</span><span class="op">]</span> instruction</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="op">);</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="dt">reg</span> <span class="op">[</span><span class="dv">31</span><span class="op">:</span><span class="dv">0</span><span class="op">]</span> mem <span class="op">[</span><span class="dv">0</span><span class="op">:</span><span class="dv">31</span><span class="op">];</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="kw">initial</span> <span class="kw">begin</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    mem<span class="op">[</span><span class="dv">0</span><span class="op">]</span> <span class="op">=</span> <span class="bn">32&#39;h00502023</span><span class="op">;</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    mem<span class="op">[</span><span class="dv">1</span><span class="op">]</span> <span class="op">=</span> <span class="bn">32&#39;h00402803</span><span class="op">;</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    mem<span class="op">[</span><span class="dv">2</span><span class="op">]</span> <span class="op">=</span> <span class="bn">32&#39;h00312023</span><span class="op">;</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    mem<span class="op">[</span><span class="dv">3</span><span class="op">]</span> <span class="op">=</span> <span class="bn">32&#39;h00210033</span><span class="op">;</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="kw">assign</span> instruction <span class="op">=</span> </span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>    mem<span class="op">[</span>address<span class="op">[</span><span class="dv">6</span><span class="op">:</span><span class="dv">2</span><span class="op">]];</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a><span class="kw">endmodule</span></span></code></pre></div>
+</div>
+</div>
+</section>
+<section class="slide level1">
+
+<h2 id="component-control-unit">Component: Control Unit</h2>
+<div class="split">
+<div class="left-panel">
+<h3 id="purpose-2">Purpose</h3>
+<p><strong>Generates</strong> control signals from opcode</p>
+<h3 id="control-outputs">Control Outputs</h3>
+<ul>
+<li>ALUSrc</li>
+<li>MemtoReg</li>
+<li>RegWrite</li>
+<li>MemRead</li>
+<li>MemWrite</li>
+<li>Branch</li>
+</ul>
+<p>Maps instruction opcode to bit patterns.</p>
+</div>
+<div class="right-panel">
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode verilog"><code class="sourceCode verilog"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">module</span> control <span class="op">(</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    <span class="dt">input</span> <span class="op">[</span><span class="dv">6</span><span class="op">:</span><span class="dv">0</span><span class="op">]</span> opcode<span class="op">,</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">output</span> ALUSrc<span class="op">,</span> MemtoReg<span class="op">,</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">output</span> RegWrite<span class="op">,</span> MemRead<span class="op">,</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">output</span> MemWrite<span class="op">,</span> Branch<span class="op">,</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    <span class="dt">output</span> <span class="op">[</span><span class="dv">1</span><span class="op">:</span><span class="dv">0</span><span class="op">]</span> ALUOp</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="op">);</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="kw">always</span> <span class="op">@(</span>*<span class="op">)</span> <span class="kw">begin</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>    <span class="kw">case</span><span class="op">(</span>opcode<span class="op">)</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>        <span class="bn">7&#39;b0110011</span><span class="op">:</span> <span class="kw">begin</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>            RegWrite <span class="op">=</span> <span class="bn">1&#39;b1</span><span class="op">;</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>            ALUSrc   <span class="op">=</span> <span class="bn">1&#39;b0</span><span class="op">;</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>            MemtoReg <span class="op">=</span> <span class="bn">1&#39;b0</span><span class="op">;</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>            ALUOp    <span class="op">=</span> <span class="bn">2&#39;b10</span><span class="op">;</span></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>        <span class="kw">end</span></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>        <span class="bn">7&#39;b0010011</span><span class="op">:</span> <span class="kw">begin</span></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>            RegWrite <span class="op">=</span> <span class="bn">1&#39;b1</span><span class="op">;</span></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>            ALUSrc   <span class="op">=</span> <span class="bn">1&#39;b1</span><span class="op">;</span></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>            ALUOp    <span class="op">=</span> <span class="bn">2&#39;b11</span><span class="op">;</span></span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>        <span class="kw">end</span></span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>        <span class="kw">default</span><span class="op">:</span> <span class="kw">begin</span></span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>            RegWrite <span class="op">=</span> <span class="bn">1&#39;b0</span><span class="op">;</span></span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>        <span class="kw">end</span></span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>    <span class="kw">endcase</span></span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a><span class="kw">endmodule</span></span></code></pre></div>
+</div>
+</div>
+</section>
+<section class="slide level1">
+
+<h2 id="component-register-file">Component: Register File</h2>
+<div class="split">
+<div class="left-panel">
+<h3 id="purpose-3">Purpose</h3>
+<p><strong>Stores</strong> 32 registers (32-bit each)<br />
+<strong>Reads</strong> 2 ports simultaneously<br />
+<strong>Writes</strong> 1 port per cycle</p>
+<h3 id="design">Design</h3>
+<p>Dual-read, single-write. Register 0 always zero.</p>
+<h3 id="timing">Timing</h3>
+<ul>
+<li>Reads: combinational</li>
+<li>Writes: synchronous (clock edge)</li>
+</ul>
+</div>
+<div class="right-panel">
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode verilog"><code class="sourceCode verilog"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">module</span> register_file <span class="op">(</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    <span class="dt">input</span> clk<span class="op">,</span> reset<span class="op">,</span> RegWrite<span class="op">,</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">input</span> <span class="op">[</span><span class="dv">4</span><span class="op">:</span><span class="dv">0</span><span class="op">]</span> read_reg1<span class="op">,</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">input</span> <span class="op">[</span><span class="dv">4</span><span class="op">:</span><span class="dv">0</span><span class="op">]</span> read_reg2<span class="op">,</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">input</span> <span class="op">[</span><span class="dv">4</span><span class="op">:</span><span class="dv">0</span><span class="op">]</span> write_reg<span class="op">,</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    <span class="dt">input</span> <span class="op">[</span><span class="dv">31</span><span class="op">:</span><span class="dv">0</span><span class="op">]</span> write_data<span class="op">,</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    <span class="dt">output</span> <span class="op">[</span><span class="dv">31</span><span class="op">:</span><span class="dv">0</span><span class="op">]</span> read_data1<span class="op">,</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    <span class="dt">output</span> <span class="op">[</span><span class="dv">31</span><span class="op">:</span><span class="dv">0</span><span class="op">]</span> read_data2</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="op">);</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="dt">reg</span> <span class="op">[</span><span class="dv">31</span><span class="op">:</span><span class="dv">0</span><span class="op">]</span> registers <span class="op">[</span><span class="dv">0</span><span class="op">:</span><span class="dv">31</span><span class="op">];</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="kw">assign</span> read_data1 <span class="op">=</span> </span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>    <span class="op">(</span>read_reg1 <span class="op">==</span> <span class="dv">0</span><span class="op">)</span> <span class="op">?</span> <span class="bn">32&#39;b0</span> </span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>                     <span class="op">:</span> registers<span class="op">[</span>read_reg1<span class="op">];</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a><span class="kw">assign</span> read_data2 <span class="op">=</span> </span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>    <span class="op">(</span>read_reg2 <span class="op">==</span> <span class="dv">0</span><span class="op">)</span> <span class="op">?</span> <span class="bn">32&#39;b0</span></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>                     <span class="op">:</span> registers<span class="op">[</span>read_reg2<span class="op">];</span></span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a><span class="kw">always</span> <span class="op">@(</span><span class="kw">posedge</span> clk<span class="op">)</span> <span class="kw">begin</span></span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> <span class="op">(</span>RegWrite <span class="op">&amp;&amp;</span> write_reg <span class="op">!=</span> <span class="dv">0</span><span class="op">)</span></span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>        registers<span class="op">[</span>write_reg<span class="op">]</span> <span class="op">&lt;=</span> </span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>            write_data<span class="op">;</span></span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a><span class="kw">endmodule</span></span></code></pre></div>
+</div>
+</div>
+</section>
+<section class="slide level1">
+
+<h2 id="component-alu">Component: ALU</h2>
+<div class="split">
+<div class="left-panel">
+<h3 id="purpose-4">Purpose</h3>
+<p><strong>Computes</strong> arithmetic/logic operations<br />
+<strong>Sets</strong> zero flag for branches</p>
+<h3 id="operations">Operations</h3>
+<ul>
+<li>Add / Subtract</li>
+<li>AND / OR / XOR</li>
+<li>SLT (set less than)</li>
+</ul>
+<h3 id="output">Output</h3>
+<p>32-bit result + 1-bit zero flag</p>
+</div>
+<div class="right-panel">
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode verilog"><code class="sourceCode verilog"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">module</span> alu<span class="op">(</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    <span class="dt">input</span> <span class="op">[</span><span class="dv">31</span><span class="op">:</span><span class="dv">0</span><span class="op">]</span> a<span class="op">,</span> b<span class="op">,</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">input</span> <span class="op">[</span><span class="dv">3</span><span class="op">:</span><span class="dv">0</span><span class="op">]</span> alu_control<span class="op">,</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">output</span> <span class="dt">reg</span> <span class="op">[</span><span class="dv">31</span><span class="op">:</span><span class="dv">0</span><span class="op">]</span> result<span class="op">,</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">output</span> zero</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="op">);</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="kw">always</span> <span class="op">@(</span>*<span class="op">)</span> <span class="kw">begin</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>    <span class="kw">case</span><span class="op">(</span>alu_control<span class="op">)</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>        <span class="bn">4&#39;b0010</span><span class="op">:</span> result <span class="op">=</span> a <span class="op">+</span> b<span class="op">;</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>        <span class="bn">4&#39;b0110</span><span class="op">:</span> result <span class="op">=</span> a <span class="op">-</span> b<span class="op">;</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>        <span class="bn">4&#39;b0000</span><span class="op">:</span> result <span class="op">=</span> a <span class="op">&amp;</span> b<span class="op">;</span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>        <span class="bn">4&#39;b0001</span><span class="op">:</span> result <span class="op">=</span> a <span class="op">|</span> b<span class="op">;</span></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>        <span class="bn">4&#39;b0111</span><span class="op">:</span> result <span class="op">=</span> a <span class="op">^</span> b<span class="op">;</span></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>        <span class="kw">default</span><span class="op">:</span> result <span class="op">=</span> <span class="bn">32&#39;b0</span><span class="op">;</span></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>    <span class="kw">endcase</span></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a><span class="kw">assign</span> zero <span class="op">=</span> <span class="op">(</span>result <span class="op">==</span> <span class="dv">0</span><span class="op">)</span> </span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>              <span class="op">?</span> <span class="bn">1&#39;b1</span> <span class="op">:</span> <span class="bn">1&#39;b0</span><span class="op">;</span></span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a><span class="kw">endmodule</span></span></code></pre></div>
+</div>
+</div>
+</section>
+<section class="slide level1">
+
+<h2 id="component-data-memory">Component: Data Memory</h2>
+<div class="split">
+<div class="left-panel">
+<h3 id="purpose-5">Purpose</h3>
+<p><strong>Stores</strong> 32 × 32-bit data words<br />
+<strong>Synchronous writes</strong>, combinational reads</p>
+<h3 id="operation-1">Operation</h3>
+<ul>
+<li>MemWrite=1 &amp; clock → write</li>
+<li>MemRead=1 → read combinationally</li>
+</ul>
+</div>
+<div class="right-panel">
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode verilog"><code class="sourceCode verilog"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">module</span> data_memory <span class="op">(</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    <span class="dt">input</span> clk<span class="op">,</span> MemWrite<span class="op">,</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">input</span> MemRead<span class="op">,</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">input</span> <span class="op">[</span><span class="dv">31</span><span class="op">:</span><span class="dv">0</span><span class="op">]</span> address<span class="op">,</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">input</span> <span class="op">[</span><span class="dv">31</span><span class="op">:</span><span class="dv">0</span><span class="op">]</span> write_data<span class="op">,</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    <span class="dt">output</span> <span class="op">[</span><span class="dv">31</span><span class="op">:</span><span class="dv">0</span><span class="op">]</span> read_data</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="op">);</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="dt">reg</span> <span class="op">[</span><span class="dv">31</span><span class="op">:</span><span class="dv">0</span><span class="op">]</span> memory <span class="op">[</span><span class="dv">0</span><span class="op">:</span><span class="dv">31</span><span class="op">];</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="kw">assign</span> read_data <span class="op">=</span> MemRead </span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>    <span class="op">?</span> memory<span class="op">[</span>address<span class="op">[</span><span class="dv">6</span><span class="op">:</span><span class="dv">2</span><span class="op">]]</span> </span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>    <span class="op">:</span> <span class="bn">32&#39;b0</span><span class="op">;</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a><span class="kw">always</span> <span class="op">@(</span><span class="kw">posedge</span> clk<span class="op">)</span> <span class="kw">begin</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> <span class="op">(</span>MemWrite<span class="op">)</span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>        memory<span class="op">[</span>address<span class="op">[</span><span class="dv">6</span><span class="op">:</span><span class="dv">2</span><span class="op">]]</span> </span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>            <span class="op">&lt;=</span> write_data<span class="op">;</span></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a><span class="kw">endmodule</span></span></code></pre></div>
+</div>
+</div>
+</section>
+<section class="slide level1">
+
+<h2 id="architecture-overview">Architecture Overview</h2>
+<div class="image-slide">
+<figure>
+<img data-src="single_cycle_processor_image.jpeg"
+alt="Single cycle processor block diagram" />
+<figcaption aria-hidden="true">Single cycle processor block
+diagram</figcaption>
+</figure>
+</div>
+</section>
+<section class="slide level1">
+
+<h2 id="demo-simulation-output">Demo: Simulation Output</h2>
+<div class="image-slide">
+<figure>
+<img data-src="demo_output.png"
+alt="Waveform showing successful execution" />
+<figcaption aria-hidden="true">Waveform showing successful
+execution</figcaption>
+</figure>
+</div>
+</section>
+<section class="slide level1">
+
+<h2 id="datapath-execution-example">Datapath Execution Example</h2>
+<div class="split">
+<section id="add-instruction-trace" class="left-panel">
+<h3>ADD Instruction Trace</h3>
+<p><strong>All stages in ONE cycle:</strong></p>
+<ol type="1">
+<li><strong>Fetch</strong>: Load instr from mem</li>
+<li><strong>Decode</strong>: Opcode (ADD), regs</li>
+<li><strong>Execute</strong>: ALU: 5 + 3</li>
+<li><strong>Memory</strong>: No load/store</li>
+<li><strong>Write-back</strong>: R3 ← 8</li>
+</ol>
+<p><strong>Total time: 1 clock cycle ✓</strong></p>
+</section>
+<div class="right-panel">
+<pre><code>INSTRUCTION: ADD R3, R1, R2 (opcode=110001)
+
+┌─────────────────────────────┐
+│ PC = 0x00001000             │
+├─────────────────────────────┤
+│ R1 = 5, R2 = 3              │
+├─────────────────────────────┤
+│ Execute: 5 + 3 = 8          │
+├─────────────────────────────┤
+│ Result: R3 ← 8              │
+├─────────────────────────────┤
+│ PC ← 0x00001004             │
+└─────────────────────────────┘
+
+After Cycle 1: R3 = 8 ✓</code></pre>
+</div>
+</div>
+</section>
+<section class="slide level1">
+
+<h2 id="design-trade-offs">Design Trade-offs</h2>
+<div class="split">
+<div class="left-panel">
+<h3 id="advantages">✅ Advantages</h3>
+<ul>
+<li><strong>Simple Control</strong>: Straightforward logic, easy to
+design</li>
+<li><strong>No Hazards</strong>: All dependencies resolved in one
+cycle</li>
+<li><strong>Educational</strong>: Clear datapath, great for
+learning</li>
+<li><strong>Fast Decision Time</strong>: One cycle per instruction
+conceptually</li>
+</ul>
+<h3 id="disadvantages">❌ Disadvantages</h3>
+<ul>
+<li><strong>Slow Clock</strong>: Limited by critical path (longest
+stage)</li>
+<li><strong>Hardware Waste</strong>: Simple instructions pay for complex
+ones</li>
+<li><strong>Power Inefficiency</strong>: Must run at slowest stage’s
+speed</li>
+<li><strong>Not Practical</strong>: Real processors use
+pipelining/multi-cycle</li>
+</ul>
+</div>
+<div class="right-panel">
+<pre><code>Single-Cycle vs Pipelined:
+
+SINGLE-CYCLE (This):
+Cycle: |===I1===|===I2===|===I3===|
+
+3 instructions: 3 cycles
+Latency: HIGH, Throughput: OK
+
+PIPELINED (Future):
+Cycle: |I1|I2|I3|I4|I5|I6|
+
+3 instructions: 4 cycles
+Latency: LOW, Throughput: GREAT
+
+Trade-off: Design complexity
+for better performance</code></pre>
+</div>
+</div>
+</section>
+<section class="slide level1">
+
+<h2 id="key-concepts">Key Concepts</h2>
+<div class="split">
+<div class="left-panel">
+<h3 id="critical-path">Critical Path</h3>
+<p><span
+class="math display"><em>T</em><sub><em>c</em><em>l</em><em>k</em></sub> ≥ <em>T</em><sub><em>I</em><em>F</em></sub> + <em>T</em><sub><em>I</em><em>D</em></sub> + <em>T</em><sub><em>E</em><em>X</em></sub> + <em>T</em><sub><em>M</em><em>E</em><em>M</em></sub> + <em>T</em><sub><em>W</em><em>B</em></sub></span></p>
+<p><strong>Bottleneck</strong>: Every instruction waits for the slowest
+stage</p>
+<h3 id="why-it-matters">Why It Matters</h3>
+<ul>
+<li>One cycle per instruction</li>
+<li>Clock speed limited by longest stage</li>
+<li>Simple control, but inefficient</li>
+</ul>
+</div>
+<div class="right-panel">
+<pre><code>Pipeline Timeline (Single-Cycle):
+
+Instruction  Timing
+────────────────────────
+I1: Fetch    Decode   Exec  Mem  WB
+I2:          Fetch    Decode Exec Mem  WB
+I3:                   Fetch Decode Exec Mem WB
+
+Cycle #:     1        2      3    4    5
+
+Each instruction
+takes 5 cycles minimum</code></pre>
+</div>
+</div>
+<p>::: :::</p>
+</section>
+<section class="slide level1">
+
+<section id="summary" class="conclusion">
+<h2>Summary</h2>
+<p class="conclusion-item">
+<strong>Architecture:</strong> Complete single-cycle RISC-V processor
+with all five pipeline stages in one clock cycle
+</p>
+<p class="conclusion-item">
+<strong>Components:</strong> PC, instruction memory, control unit,
+register file, ALU, data memory
+</p>
+<p class="conclusion-item">
+<strong>Insight:</strong> Simple and elegant, but limited by critical
+path. Foundation for pipelined designs.
+</p>
+<p class="conclusion-item">
+<strong>Next Steps:</strong> Pipeline architecture, hazard detection,
+cache design
+</p>
+</section>
+</section>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/reveal.js@4/dist/reveal.js"></script>
+
+  <!-- reveal.js plugins -->
+  <script src="https://unpkg.com/reveal.js@4/plugin/notes/notes.js"></script>
+  <script src="https://unpkg.com/reveal.js@4/plugin/search/search.js"></script>
+  <script src="https://unpkg.com/reveal.js@4/plugin/zoom/zoom.js"></script>
+
+  <script>
+
+      // Full list of configuration options available at:
+      // https://revealjs.com/config/
+      Reveal.initialize({
+        // Display controls in the bottom right corner
+        controls: true,
+
+        // Help the user learn the controls by providing hints, for example by
+        // bouncing the down arrow when they first encounter a vertical slide
+        controlsTutorial: true,
+
+        // Determines where controls appear, "edges" or "bottom-right"
+        controlsLayout: 'bottom-right',
+
+        // Visibility rule for backwards navigation arrows; "faded", "hidden"
+        // or "visible"
+        controlsBackArrows: 'faded',
+
+        // Display a presentation progress bar
+        progress: true,
+
+        // Display the page number of the current slide
+        slideNumber: true,
+
+        // 'all', 'print', or 'speaker'
+        showSlideNumber: 'all',
+
+        // Add the current slide number to the URL hash so that reloading the
+        // page/copying the URL will return you to the same slide
+        hash: true,
+
+        // Start with 1 for the hash rather than 0
+        hashOneBasedIndex: false,
+
+        // Flags if we should monitor the hash and change slides accordingly
+        respondToHashChanges: true,
+
+        // Push each slide change to the browser history
+        history: false,
+
+        // Enable keyboard shortcuts for navigation
+        keyboard: true,
+
+        // Enable the slide overview mode
+        overview: true,
+
+        // Disables the default reveal.js slide layout (scaling and centering)
+        // so that you can use custom CSS layout
+        disableLayout: false,
+
+        // Vertical centering of slides
+        center: false,
+
+        // Enables touch navigation on devices with touch input
+        touch: true,
+
+        // Loop the presentation
+        loop: false,
+
+        // Change the presentation direction to be RTL
+        rtl: false,
+
+        // see https://revealjs.com/vertical-slides/#navigation-mode
+        navigationMode: 'default',
+
+        // Randomizes the order of slides each time the presentation loads
+        shuffle: false,
+
+        // Turns fragments on and off globally
+        fragments: true,
+
+        // Flags whether to include the current fragment in the URL,
+        // so that reloading brings you to the same fragment position
+        fragmentInURL: true,
+
+        // Flags if the presentation is running in an embedded mode,
+        // i.e. contained within a limited portion of the screen
+        embedded: false,
+
+        // Flags if we should show a help overlay when the questionmark
+        // key is pressed
+        help: true,
+
+        // Flags if it should be possible to pause the presentation (blackout)
+        pause: true,
+
+        // Flags if speaker notes should be visible to all viewers
+        showNotes: false,
+
+        // Global override for autoplaying embedded media (null/true/false)
+        autoPlayMedia: null,
+
+        // Global override for preloading lazy-loaded iframes (null/true/false)
+        preloadIframes: null,
+
+        // Number of milliseconds between automatically proceeding to the
+        // next slide, disabled when set to 0, this value can be overwritten
+        // by using a data-autoslide attribute on your slides
+        autoSlide: 0,
+
+        // Stop auto-sliding after user input
+        autoSlideStoppable: true,
+
+        // Use this method for navigation when auto-sliding
+        autoSlideMethod: null,
+
+        // Specify the average time in seconds that you think you will spend
+        // presenting each slide. This is used to show a pacing timer in the
+        // speaker view
+        defaultTiming: null,
+
+        // Enable slide navigation via mouse wheel
+        mouseWheel: false,
+
+        // The display mode that will be used to show slides
+        display: 'block',
+
+        // Hide cursor if inactive
+        hideInactiveCursor: true,
+
+        // Time before the cursor is hidden (in ms)
+        hideCursorTime: 5000,
+
+        // Opens links in an iframe preview overlay
+        previewLinks: false,
+
+        // Transition style (none/fade/slide/convex/concave/zoom)
+        transition: 'fade',
+
+        // Transition speed (default/fast/slow)
+        transitionSpeed: 'default',
+
+        // Transition style for full page slide backgrounds
+        // (none/fade/slide/convex/concave/zoom)
+        backgroundTransition: 'fade',
+
+        // Number of slides away from the current that are visible
+        viewDistance: 3,
+
+        // Number of slides away from the current that are visible on mobile
+        // devices. It is advisable to set this to a lower number than
+        // viewDistance in order to save resources.
+        mobileViewDistance: 2,
+
+        // reveal.js plugins
+        plugins: [
+          RevealNotes,
+          RevealSearch,
+          RevealZoom
+        ]
+      });
+    </script>
+    </body>
+</html>
