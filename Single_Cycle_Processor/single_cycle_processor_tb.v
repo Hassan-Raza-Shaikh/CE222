@@ -34,10 +34,8 @@ initial begin
     reset = 1'b1;
     #12 reset = 1'b0;
 
-    @(posedge clk);
-    #1;
+    #200 $finish;
 
-    $finish;
 end
 
 initial begin

@@ -47,8 +47,8 @@ initial begin
 end
 
 always @(*) begin
-    if (address[31:0] <= 4'd15)
-        instruction = memory[address[31:0]];
+    if (address[31:2] <= 4'd15)
+        instruction = memory[address[31:2]];
     else
         instruction = 32'h00000000;
 end

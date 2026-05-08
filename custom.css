@@ -36,6 +36,8 @@
   background: transparent;
   padding: 0;
   border: none;
+  min-height: 0;
+  overflow: hidden !important;
 }
 
 /* Title slide */
@@ -164,6 +166,8 @@
   width: 100% !important;
   height: 100% !important;
   gap: 0 !important;
+  align-items: stretch !important;
+  min-height: 0 !important;
 }
 
 .reveal .left-panel {
@@ -171,6 +175,7 @@
   display: flex !important;
   flex-direction: column !important;
   justify-content: flex-start !important;
+  min-height: 0 !important;
   padding: 3rem !important;
   background: linear-gradient(135deg, rgba(10, 14, 39, 0.95) 0%, rgba(21, 29, 59, 0.9) 100%) !important;
   border-right: 3px solid var(--accent-cyan) !important;
@@ -178,6 +183,7 @@
   overflow-x: hidden !important;
   text-align: left !important;
   max-height: 90vh !important;
+  scrollbar-gutter: stable !important;
 }
 
 .reveal .right-panel {
@@ -185,12 +191,14 @@
   display: flex !important;
   flex-direction: column !important;
   justify-content: flex-start !important;
+  min-height: 0 !important;
   padding: 3.5rem !important;
   background: linear-gradient(135deg, rgba(15, 18, 32, 0.98) 0%, rgba(21, 29, 59, 0.98) 100%) !important;
   overflow-y: auto !important;
   overflow-x: hidden !important;
   max-height: 90vh !important;
   position: relative !important;
+  scrollbar-gutter: stable !important;
 }
 
 .reveal .left-panel h2 {
@@ -247,22 +255,48 @@
   width: 100% !important;
   height: auto !important;
   max-height: 70vh !important;
+  min-height: 0 !important;
   border-radius: 12px !important;
   border: 2px solid var(--accent-cyan) !important;
   background: linear-gradient(135deg, rgba(10, 14, 39, 0.95) 0%, rgba(15, 18, 32, 0.95) 100%) !important;
   padding: 0 !important;
   overflow: auto !important;
+  scrollbar-gutter: stable !important;
   box-shadow: 0 20px 60px rgba(0, 217, 255, 0.1), inset 0 1px 0 rgba(0, 217, 255, 0.2) !important;
+}
+
+.reveal div.sourceCode,
+.reveal pre.sourceCode {
+  width: 100% !important;
+  max-height: 70vh !important;
+  min-height: 0 !important;
+  overflow: auto !important;
+  scrollbar-gutter: stable !important;
+}
+
+.reveal div.sourceCode {
+  padding: 0 !important;
+}
+
+.reveal pre.sourceCode {
+  margin: 0 !important;
 }
 
 .reveal pre code {
   font-family: 'JetBrains Mono', monospace !important;
-  font-size: 0.9rem !important;
-  line-height: 1.6 !important;
-  padding: 2rem !important;
+  font-size: 0.76rem !important;
+  line-height: 1.45 !important;
+  padding: 1.35rem !important;
   color: #e0e7ff !important;
   white-space: pre !important;
   background: transparent !important;
+}
+
+.reveal pre > code.sourceCode {
+  display: block !important;
+  min-height: 0 !important;
+  overflow: visible !important;
+  padding: 1.35rem !important;
 }
 
 /* Syntax highlighting */
@@ -406,6 +440,13 @@
 .reveal .left-panel::-webkit-scrollbar-thumb:hover,
 .reveal .right-panel::-webkit-scrollbar-thumb:hover {
   opacity: 1 !important;
+}
+
+.reveal pre,
+.reveal .left-panel,
+.reveal .right-panel {
+  -webkit-overflow-scrolling: touch !important;
+  overscroll-behavior: contain !important;
 }
 
 /* Transitions */

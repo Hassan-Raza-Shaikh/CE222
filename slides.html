@@ -107,19 +107,19 @@
 
 <section id="title-slide">
   <h1 class="title">Single Cycle Processor</h1>
-  <p class="subtitle">CE222 Course Project</p>
-  <p class="author">Hassan Raza Shaikh</p>
+  <p class="subtitle">CE222L Course Project</p>
+  <p class="author">Hassan Raza - Emaan Swati</p>
   <p class="date">2026-05-08</p>
 </section>
 
 <section id="single-cycle-processor" class="slide level1 hero">
 <h1>Single Cycle Processor</h1>
 <p class="subtitle">
-Complete RISC-V inspired CPU executing any instruction in exactly one
-clock cycle
+<p>Complete RISC-V inspired CPU executing any instruction in exactly one
+clock cycle</p>
 </p>
 <p class="meta">
-RISC-V | Verilog HDL | CE222 Digital Design
+<p>RISC-V | Verilog HDL | CE222L </p>
 </p>
 </section>
 <section class="slide level1">
@@ -178,14 +178,38 @@ class="sourceCode verilog"><code class="sourceCode verilog"><span id="cb2-1"><a 
 <span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="op">);</span></span>
 <span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="co">// All 32-bit RISC-V signals</span></span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="co">// connected in one cycle</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="co">// connected through modular units</span></span>
 <span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="dt">wire</span> ALUSrc<span class="op">,</span> MemtoReg<span class="op">;</span></span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="dt">wire</span> RegWrite<span class="op">,</span> MemRead<span class="op">;</span></span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="dt">wire</span> MemWrite<span class="op">,</span> Branch<span class="op">;</span></span>
-<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="dt">wire</span> <span class="op">[</span><span class="dv">1</span><span class="op">:</span><span class="dv">0</span><span class="op">]</span> ALUOp<span class="op">;</span></span>
-<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a><span class="kw">endmodule</span></span></code></pre></div>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="dt">wire</span> ALUSrc<span class="op">,</span> MemtoReg<span class="op">,</span> RegWrite<span class="op">,</span> MemRead<span class="op">,</span> MemWrite<span class="op">,</span> Branch<span class="op">;</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="dt">wire</span> <span class="op">[</span><span class="dv">1</span><span class="op">:</span><span class="dv">0</span><span class="op">]</span> ALUOp<span class="op">;</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="dt">wire</span> <span class="op">[</span><span class="dv">3</span><span class="op">:</span><span class="dv">0</span><span class="op">]</span> alu_operation<span class="op">;</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="dt">wire</span> zero<span class="op">;</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="dt">wire</span> <span class="op">[</span><span class="dv">31</span><span class="op">:</span><span class="dv">0</span><span class="op">]</span> pc_current<span class="op">,</span> pc_plus4<span class="op">,</span> branch_target<span class="op">,</span> pc_next<span class="op">;</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a><span class="dt">wire</span> <span class="op">[</span><span class="dv">31</span><span class="op">:</span><span class="dv">0</span><span class="op">]</span> immediate<span class="op">,</span> alu_input2<span class="op">;</span></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>PC pc_unit <span class="op">(</span>.clk<span class="op">(</span>clk<span class="op">),</span> .reset<span class="op">(</span>reset<span class="op">),</span> .PC_in<span class="op">(</span>pc_next<span class="op">),</span> .PC_out<span class="op">(</span>pc_current<span class="op">));</span></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>instruction_memory imem <span class="op">(</span>.address<span class="op">(</span>pc_current<span class="op">),</span> .instruction<span class="op">(</span>instruction<span class="op">));</span></span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>control ctrl <span class="op">(</span>.opcode<span class="op">(</span>instruction<span class="op">[</span><span class="dv">6</span><span class="op">:</span><span class="dv">0</span><span class="op">]),</span> .ALUSrc<span class="op">(</span>ALUSrc<span class="op">),</span> .MemtoReg<span class="op">(</span>MemtoReg<span class="op">),</span> </span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>              .RegWrite<span class="op">(</span>RegWrite<span class="op">),</span> .MemRead<span class="op">(</span>MemRead<span class="op">),</span> .MemWrite<span class="op">(</span>MemWrite<span class="op">),</span> </span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>              .Branch<span class="op">(</span>Branch<span class="op">),</span> .ALUOp<span class="op">(</span>ALUOp<span class="op">));</span></span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>register_file reg_file <span class="op">(</span>.clk<span class="op">(</span>clk<span class="op">),</span> .reset<span class="op">(</span>reset<span class="op">),</span> .RegWrite<span class="op">(</span>RegWrite<span class="op">),</span> </span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>                       .read_reg1<span class="op">(</span>instruction<span class="op">[</span><span class="dv">19</span><span class="op">:</span><span class="dv">15</span><span class="op">]),</span> .read_reg2<span class="op">(</span>instruction<span class="op">[</span><span class="dv">24</span><span class="op">:</span><span class="dv">20</span><span class="op">]),</span> </span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>                       .write_reg<span class="op">(</span>instruction<span class="op">[</span><span class="dv">11</span><span class="op">:</span><span class="dv">7</span><span class="op">]),</span> .write_data<span class="op">(</span>write_back_data<span class="op">),</span> </span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a>                       .read_data1<span class="op">(</span>read_data1<span class="op">),</span> .read_data2<span class="op">(</span>read_data2<span class="op">));</span></span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a>alu_control alu_ctrl <span class="op">(</span>.ALUOp<span class="op">(</span>ALUOp<span class="op">),</span> .Funct7<span class="op">(</span>instruction<span class="op">[</span><span class="dv">31</span><span class="op">:</span><span class="dv">25</span><span class="op">]),</span> </span>
+<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a>                     .Funct3<span class="op">(</span>instruction<span class="op">[</span><span class="dv">14</span><span class="op">:</span><span class="dv">12</span><span class="op">]),</span> .Operation<span class="op">(</span>alu_operation<span class="op">));</span></span>
+<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a>alu alu_unit <span class="op">(</span>.a<span class="op">(</span>read_data1<span class="op">),</span> .b<span class="op">(</span>alu_input2<span class="op">),</span> .alu_control<span class="op">(</span>alu_operation<span class="op">),</span> </span>
+<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a>              .result<span class="op">(</span>alu_result<span class="op">),</span> .zero<span class="op">(</span>zero<span class="op">));</span></span>
+<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a><span class="kw">assign</span> pc_next <span class="op">=</span> <span class="op">(</span>Branch <span class="op">&amp;</span> zero<span class="op">)</span> <span class="op">?</span> branch_target <span class="op">:</span> pc_plus4<span class="op">;</span></span>
+<span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a><span class="kw">assign</span> pc_out <span class="op">=</span> pc_current<span class="op">;</span></span>
+<span id="cb2-43"><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-44"><a href="#cb2-44" aria-hidden="true" tabindex="-1"></a><span class="kw">endmodule</span></span></code></pre></div>
 </div>
 </div>
 </section>
@@ -204,13 +228,13 @@ class="sourceCode verilog"><code class="sourceCode verilog"><span id="cb2-1"><a 
 <div class="right-panel">
 <div class="sourceCode" id="cb3"><pre
 class="sourceCode verilog"><code class="sourceCode verilog"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">module</span> PC<span class="op">(</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="dt">input</span> clk<span class="op">,</span> reset<span class="op">,</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">input</span> <span class="op">[</span><span class="dv">31</span><span class="op">:</span><span class="dv">0</span><span class="op">]</span> PC_in<span class="op">,</span></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">output</span> <span class="dt">reg</span> <span class="op">[</span><span class="dv">31</span><span class="op">:</span><span class="dv">0</span><span class="op">]</span> PC_out</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="op">);</span></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="kw">always</span> <span class="op">@(</span><span class="kw">posedge</span> clk <span class="dt">or</span> </span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>         <span class="kw">posedge</span> reset<span class="op">)</span> <span class="kw">begin</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="dt">input</span> clk<span class="op">,</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">input</span> reset<span class="op">,</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">input</span> <span class="op">[</span><span class="dv">31</span><span class="op">:</span><span class="dv">0</span><span class="op">]</span> PC_in<span class="op">,</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">output</span> <span class="dt">reg</span> <span class="op">[</span><span class="dv">31</span><span class="op">:</span><span class="dv">0</span><span class="op">]</span> PC_out</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="op">);</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="kw">always</span> <span class="op">@(</span><span class="kw">posedge</span> clk <span class="dt">or</span> <span class="kw">posedge</span> reset<span class="op">)</span> <span class="kw">begin</span></span>
 <span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> <span class="op">(</span>reset<span class="op">)</span></span>
 <span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>        PC_out <span class="op">&lt;=</span> <span class="bn">32&#39;b0</span><span class="op">;</span></span>
 <span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    <span class="kw">else</span></span>
@@ -241,22 +265,28 @@ class="sourceCode verilog"><code class="sourceCode verilog"><span id="cb3-1"><a 
 <div class="sourceCode" id="cb4"><pre
 class="sourceCode verilog"><code class="sourceCode verilog"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">module</span> instruction_memory <span class="op">(</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    <span class="dt">input</span> <span class="op">[</span><span class="dv">31</span><span class="op">:</span><span class="dv">0</span><span class="op">]</span> address<span class="op">,</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">output</span> <span class="op">[</span><span class="dv">31</span><span class="op">:</span><span class="dv">0</span><span class="op">]</span> instruction</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">output</span> <span class="dt">reg</span> <span class="op">[</span><span class="dv">31</span><span class="op">:</span><span class="dv">0</span><span class="op">]</span> instruction</span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="op">);</span></span>
 <span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="dt">reg</span> <span class="op">[</span><span class="dv">31</span><span class="op">:</span><span class="dv">0</span><span class="op">]</span> mem <span class="op">[</span><span class="dv">0</span><span class="op">:</span><span class="dv">31</span><span class="op">];</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="dt">reg</span> <span class="op">[</span><span class="dv">31</span><span class="op">:</span><span class="dv">0</span><span class="op">]</span> memory <span class="op">[</span><span class="dv">0</span><span class="op">:</span><span class="dv">15</span><span class="op">];</span></span>
 <span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="kw">initial</span> <span class="kw">begin</span></span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    mem<span class="op">[</span><span class="dv">0</span><span class="op">]</span> <span class="op">=</span> <span class="bn">32&#39;h00502023</span><span class="op">;</span></span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    mem<span class="op">[</span><span class="dv">1</span><span class="op">]</span> <span class="op">=</span> <span class="bn">32&#39;h00402803</span><span class="op">;</span></span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    mem<span class="op">[</span><span class="dv">2</span><span class="op">]</span> <span class="op">=</span> <span class="bn">32&#39;h00312023</span><span class="op">;</span></span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    mem<span class="op">[</span><span class="dv">3</span><span class="op">]</span> <span class="op">=</span> <span class="bn">32&#39;h00210033</span><span class="op">;</span></span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="kw">assign</span> instruction <span class="op">=</span> </span>
-<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>    mem<span class="op">[</span>address<span class="op">[</span><span class="dv">6</span><span class="op">:</span><span class="dv">2</span><span class="op">]];</span></span>
-<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a><span class="kw">endmodule</span></span></code></pre></div>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    <span class="co">// addi x1, x0, 5 </span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    memory<span class="op">[</span><span class="dv">0</span><span class="op">]</span>  <span class="op">=</span> <span class="bn">32&#39;h00500093</span><span class="op">;</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    <span class="co">// addi x2, x0, 10</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    memory<span class="op">[</span><span class="dv">1</span><span class="op">]</span>  <span class="op">=</span> <span class="bn">32&#39;h00A00113</span><span class="op">;</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>    <span class="co">// add x3, x1, x2 (x3 = 15)</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>    memory<span class="op">[</span><span class="dv">2</span><span class="op">]</span>  <span class="op">=</span> <span class="bn">32&#39;h002081B3</span><span class="op">;</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="kw">always</span> <span class="op">@(</span>*<span class="op">)</span> <span class="kw">begin</span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> <span class="op">(</span>address<span class="op">[</span><span class="dv">31</span><span class="op">:</span><span class="dv">0</span><span class="op">]</span> <span class="op">&lt;=</span> <span class="bn">4&#39;d15</span><span class="op">)</span></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>        instruction <span class="op">=</span> memory<span class="op">[</span>address<span class="op">[</span><span class="dv">31</span><span class="op">:</span><span class="dv">0</span><span class="op">]];</span></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>    <span class="kw">else</span></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>        instruction <span class="op">=</span> <span class="bn">32&#39;h00000000</span><span class="op">;</span></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a><span class="kw">endmodule</span></span></code></pre></div>
 </div>
 </div>
 </section>
@@ -282,32 +312,30 @@ class="sourceCode verilog"><code class="sourceCode verilog"><span id="cb4-1"><a 
 <div class="sourceCode" id="cb5"><pre
 class="sourceCode verilog"><code class="sourceCode verilog"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">module</span> control <span class="op">(</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    <span class="dt">input</span> <span class="op">[</span><span class="dv">6</span><span class="op">:</span><span class="dv">0</span><span class="op">]</span> opcode<span class="op">,</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">output</span> ALUSrc<span class="op">,</span> MemtoReg<span class="op">,</span></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">output</span> RegWrite<span class="op">,</span> MemRead<span class="op">,</span></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">output</span> MemWrite<span class="op">,</span> Branch<span class="op">,</span></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    <span class="dt">output</span> <span class="op">[</span><span class="dv">1</span><span class="op">:</span><span class="dv">0</span><span class="op">]</span> ALUOp</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">output</span> <span class="dt">reg</span> ALUSrc<span class="op">,</span> MemtoReg<span class="op">,</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">output</span> <span class="dt">reg</span> RegWrite<span class="op">,</span> MemRead<span class="op">,</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">output</span> <span class="dt">reg</span> MemWrite<span class="op">,</span> Branch<span class="op">,</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    <span class="dt">output</span> <span class="dt">reg</span> <span class="op">[</span><span class="dv">1</span><span class="op">:</span><span class="dv">0</span><span class="op">]</span> ALUOp</span>
 <span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="op">);</span></span>
 <span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="kw">always</span> <span class="op">@(</span>*<span class="op">)</span> <span class="kw">begin</span></span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>    <span class="kw">case</span><span class="op">(</span>opcode<span class="op">)</span></span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>        <span class="bn">7&#39;b0110011</span><span class="op">:</span> <span class="kw">begin</span></span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>            RegWrite <span class="op">=</span> <span class="bn">1&#39;b1</span><span class="op">;</span></span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>            ALUSrc   <span class="op">=</span> <span class="bn">1&#39;b0</span><span class="op">;</span></span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>            MemtoReg <span class="op">=</span> <span class="bn">1&#39;b0</span><span class="op">;</span></span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>            ALUOp    <span class="op">=</span> <span class="bn">2&#39;b10</span><span class="op">;</span></span>
-<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>        <span class="kw">end</span></span>
-<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>        <span class="bn">7&#39;b0010011</span><span class="op">:</span> <span class="kw">begin</span></span>
-<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>            RegWrite <span class="op">=</span> <span class="bn">1&#39;b1</span><span class="op">;</span></span>
-<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>            ALUSrc   <span class="op">=</span> <span class="bn">1&#39;b1</span><span class="op">;</span></span>
-<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>            ALUOp    <span class="op">=</span> <span class="bn">2&#39;b11</span><span class="op">;</span></span>
-<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>        <span class="kw">end</span></span>
-<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>        <span class="kw">default</span><span class="op">:</span> <span class="kw">begin</span></span>
-<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>            RegWrite <span class="op">=</span> <span class="bn">1&#39;b0</span><span class="op">;</span></span>
-<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>        <span class="kw">end</span></span>
-<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>    <span class="kw">endcase</span></span>
-<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
-<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a><span class="kw">endmodule</span></span></code></pre></div>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span>ALUSrc<span class="op">,</span> MemtoReg<span class="op">,</span> RegWrite<span class="op">,</span> MemRead<span class="op">,</span> MemWrite<span class="op">,</span> Branch<span class="op">,</span> ALUOp<span class="op">}</span> <span class="op">=</span> <span class="bn">8&#39;b0</span><span class="op">;</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    <span class="kw">case</span><span class="op">(</span>opcode<span class="op">)</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>        <span class="bn">7&#39;b0110011</span><span class="op">:</span> <span class="kw">begin</span> <span class="co">// R-type</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>            RegWrite <span class="op">=</span> <span class="bn">1&#39;b1</span><span class="op">;</span> ALUOp <span class="op">=</span> <span class="bn">2&#39;b10</span><span class="op">;</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>        <span class="kw">end</span></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>        <span class="bn">7&#39;b0000011</span><span class="op">:</span> <span class="kw">begin</span> <span class="co">// lw</span></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>            ALUSrc <span class="op">=</span> <span class="bn">1&#39;b1</span><span class="op">;</span> MemtoReg <span class="op">=</span> <span class="bn">1&#39;b1</span><span class="op">;</span> </span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>            RegWrite <span class="op">=</span> <span class="bn">1&#39;b1</span><span class="op">;</span> MemRead <span class="op">=</span> <span class="bn">1&#39;b1</span><span class="op">;</span></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>        <span class="kw">end</span></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>        <span class="bn">7&#39;b0010011</span><span class="op">:</span> <span class="kw">begin</span> <span class="co">// addi</span></span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>            ALUSrc <span class="op">=</span> <span class="bn">1&#39;b1</span><span class="op">;</span> RegWrite <span class="op">=</span> <span class="bn">1&#39;b1</span><span class="op">;</span> ALUOp <span class="op">=</span> <span class="bn">2&#39;b11</span><span class="op">;</span></span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>        <span class="kw">end</span></span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>    <span class="kw">endcase</span></span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a><span class="kw">endmodule</span></span></code></pre></div>
 </div>
 </div>
 </section>
@@ -332,31 +360,26 @@ class="sourceCode verilog"><code class="sourceCode verilog"><span id="cb5-1"><a 
 <div class="sourceCode" id="cb6"><pre
 class="sourceCode verilog"><code class="sourceCode verilog"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">module</span> register_file <span class="op">(</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    <span class="dt">input</span> clk<span class="op">,</span> reset<span class="op">,</span> RegWrite<span class="op">,</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">input</span> <span class="op">[</span><span class="dv">4</span><span class="op">:</span><span class="dv">0</span><span class="op">]</span> read_reg1<span class="op">,</span></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">input</span> <span class="op">[</span><span class="dv">4</span><span class="op">:</span><span class="dv">0</span><span class="op">]</span> read_reg2<span class="op">,</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">input</span> <span class="op">[</span><span class="dv">4</span><span class="op">:</span><span class="dv">0</span><span class="op">]</span> write_reg<span class="op">,</span></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    <span class="dt">input</span> <span class="op">[</span><span class="dv">31</span><span class="op">:</span><span class="dv">0</span><span class="op">]</span> write_data<span class="op">,</span></span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    <span class="dt">output</span> <span class="op">[</span><span class="dv">31</span><span class="op">:</span><span class="dv">0</span><span class="op">]</span> read_data1<span class="op">,</span></span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    <span class="dt">output</span> <span class="op">[</span><span class="dv">31</span><span class="op">:</span><span class="dv">0</span><span class="op">]</span> read_data2</span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="op">);</span></span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="dt">reg</span> <span class="op">[</span><span class="dv">31</span><span class="op">:</span><span class="dv">0</span><span class="op">]</span> registers <span class="op">[</span><span class="dv">0</span><span class="op">:</span><span class="dv">31</span><span class="op">];</span></span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="kw">assign</span> read_data1 <span class="op">=</span> </span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>    <span class="op">(</span>read_reg1 <span class="op">==</span> <span class="dv">0</span><span class="op">)</span> <span class="op">?</span> <span class="bn">32&#39;b0</span> </span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>                     <span class="op">:</span> registers<span class="op">[</span>read_reg1<span class="op">];</span></span>
-<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a><span class="kw">assign</span> read_data2 <span class="op">=</span> </span>
-<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>    <span class="op">(</span>read_reg2 <span class="op">==</span> <span class="dv">0</span><span class="op">)</span> <span class="op">?</span> <span class="bn">32&#39;b0</span></span>
-<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>                     <span class="op">:</span> registers<span class="op">[</span>read_reg2<span class="op">];</span></span>
-<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a><span class="kw">always</span> <span class="op">@(</span><span class="kw">posedge</span> clk<span class="op">)</span> <span class="kw">begin</span></span>
-<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> <span class="op">(</span>RegWrite <span class="op">&amp;&amp;</span> write_reg <span class="op">!=</span> <span class="dv">0</span><span class="op">)</span></span>
-<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>        registers<span class="op">[</span>write_reg<span class="op">]</span> <span class="op">&lt;=</span> </span>
-<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>            write_data<span class="op">;</span></span>
-<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
-<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a><span class="kw">endmodule</span></span></code></pre></div>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">input</span> <span class="op">[</span><span class="dv">4</span><span class="op">:</span><span class="dv">0</span><span class="op">]</span> read_reg1<span class="op">,</span> read_reg2<span class="op">,</span> write_reg<span class="op">,</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">input</span> <span class="op">[</span><span class="dv">31</span><span class="op">:</span><span class="dv">0</span><span class="op">]</span> write_data<span class="op">,</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">output</span> <span class="op">[</span><span class="dv">31</span><span class="op">:</span><span class="dv">0</span><span class="op">]</span> read_data1<span class="op">,</span> read_data2</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="op">);</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="dt">reg</span> <span class="op">[</span><span class="dv">31</span><span class="op">:</span><span class="dv">0</span><span class="op">]</span> registers <span class="op">[</span><span class="dv">0</span><span class="op">:</span><span class="dv">31</span><span class="op">];</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="kw">always</span> <span class="op">@(</span><span class="kw">posedge</span> clk <span class="dt">or</span> <span class="kw">posedge</span> reset<span class="op">)</span> <span class="kw">begin</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> <span class="op">(</span>reset<span class="op">)</span> <span class="kw">begin</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>        <span class="kw">for</span> <span class="op">(</span>i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> <span class="dv">32</span><span class="op">;</span> i <span class="op">=</span> i <span class="op">+</span> <span class="dv">1</span><span class="op">)</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>            registers<span class="op">[</span>i<span class="op">]</span> <span class="op">&lt;=</span> <span class="bn">32&#39;b0</span><span class="op">;</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>    <span class="kw">end</span> <span class="kw">else</span> <span class="kw">if</span> <span class="op">(</span>RegWrite <span class="op">&amp;&amp;</span> write_reg <span class="op">!=</span> <span class="bn">5&#39;b0</span><span class="op">)</span> <span class="kw">begin</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>        registers<span class="op">[</span>write_reg<span class="op">]</span> <span class="op">&lt;=</span> write_data<span class="op">;</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>    <span class="kw">end</span></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a><span class="kw">assign</span> read_data1 <span class="op">=</span> <span class="op">(</span>read_reg1 <span class="op">==</span> <span class="dv">0</span><span class="op">)</span> <span class="op">?</span> <span class="bn">32&#39;b0</span> <span class="op">:</span> registers<span class="op">[</span>read_reg1<span class="op">];</span></span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a><span class="kw">assign</span> read_data2 <span class="op">=</span> <span class="op">(</span>read_reg2 <span class="op">==</span> <span class="dv">0</span><span class="op">)</span> <span class="op">?</span> <span class="bn">32&#39;b0</span> <span class="op">:</span> registers<span class="op">[</span>read_reg2<span class="op">];</span></span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a><span class="kw">endmodule</span></span></code></pre></div>
 </div>
 </div>
 </section>
@@ -387,20 +410,18 @@ class="sourceCode verilog"><code class="sourceCode verilog"><span id="cb7-1"><a 
 <span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="op">);</span></span>
 <span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="kw">always</span> <span class="op">@(</span>*<span class="op">)</span> <span class="kw">begin</span></span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>    <span class="kw">case</span><span class="op">(</span>alu_control<span class="op">)</span></span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>        <span class="bn">4&#39;b0010</span><span class="op">:</span> result <span class="op">=</span> a <span class="op">+</span> b<span class="op">;</span></span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>        <span class="bn">4&#39;b0110</span><span class="op">:</span> result <span class="op">=</span> a <span class="op">-</span> b<span class="op">;</span></span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>        <span class="bn">4&#39;b0000</span><span class="op">:</span> result <span class="op">=</span> a <span class="op">&amp;</span> b<span class="op">;</span></span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>        <span class="bn">4&#39;b0001</span><span class="op">:</span> result <span class="op">=</span> a <span class="op">|</span> b<span class="op">;</span></span>
-<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>        <span class="bn">4&#39;b0111</span><span class="op">:</span> result <span class="op">=</span> a <span class="op">^</span> b<span class="op">;</span></span>
-<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>        <span class="kw">default</span><span class="op">:</span> result <span class="op">=</span> <span class="bn">32&#39;b0</span><span class="op">;</span></span>
-<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>    <span class="kw">endcase</span></span>
-<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
-<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a><span class="kw">assign</span> zero <span class="op">=</span> <span class="op">(</span>result <span class="op">==</span> <span class="dv">0</span><span class="op">)</span> </span>
-<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>              <span class="op">?</span> <span class="bn">1&#39;b1</span> <span class="op">:</span> <span class="bn">1&#39;b0</span><span class="op">;</span></span>
-<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a><span class="kw">endmodule</span></span></code></pre></div>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>    <span class="kw">case</span> <span class="op">(</span>alu_control<span class="op">)</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>        <span class="bn">4&#39;b0000</span><span class="op">:</span> result <span class="op">=</span> a <span class="op">&amp;</span> b<span class="op">;</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>        <span class="bn">4&#39;b0001</span><span class="op">:</span> result <span class="op">=</span> a <span class="op">|</span> b<span class="op">;</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>        <span class="bn">4&#39;b0010</span><span class="op">:</span> result <span class="op">=</span> a <span class="op">+</span> b<span class="op">;</span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>        <span class="bn">4&#39;b0110</span><span class="op">:</span> result <span class="op">=</span> a <span class="op">-</span> b<span class="op">;</span></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>        <span class="kw">default</span><span class="op">:</span> result <span class="op">=</span> <span class="bn">32&#39;b0</span><span class="op">;</span></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>    <span class="kw">endcase</span></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a><span class="kw">assign</span> zero <span class="op">=</span> <span class="op">(</span>result <span class="op">==</span> <span class="bn">32&#39;b0</span><span class="op">);</span></span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a><span class="kw">endmodule</span></span></code></pre></div>
 </div>
 </div>
 </section>
@@ -421,26 +442,22 @@ class="sourceCode verilog"><code class="sourceCode verilog"><span id="cb7-1"><a 
 <div class="right-panel">
 <div class="sourceCode" id="cb8"><pre
 class="sourceCode verilog"><code class="sourceCode verilog"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">module</span> data_memory <span class="op">(</span></span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    <span class="dt">input</span> clk<span class="op">,</span> MemWrite<span class="op">,</span></span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">input</span> MemRead<span class="op">,</span></span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">input</span> <span class="op">[</span><span class="dv">31</span><span class="op">:</span><span class="dv">0</span><span class="op">]</span> address<span class="op">,</span></span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">input</span> <span class="op">[</span><span class="dv">31</span><span class="op">:</span><span class="dv">0</span><span class="op">]</span> write_data<span class="op">,</span></span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    <span class="dt">output</span> <span class="op">[</span><span class="dv">31</span><span class="op">:</span><span class="dv">0</span><span class="op">]</span> read_data</span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="op">);</span></span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="dt">reg</span> <span class="op">[</span><span class="dv">31</span><span class="op">:</span><span class="dv">0</span><span class="op">]</span> memory <span class="op">[</span><span class="dv">0</span><span class="op">:</span><span class="dv">31</span><span class="op">];</span></span>
-<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="kw">assign</span> read_data <span class="op">=</span> MemRead </span>
-<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>    <span class="op">?</span> memory<span class="op">[</span>address<span class="op">[</span><span class="dv">6</span><span class="op">:</span><span class="dv">2</span><span class="op">]]</span> </span>
-<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>    <span class="op">:</span> <span class="bn">32&#39;b0</span><span class="op">;</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    <span class="dt">input</span> clk<span class="op">,</span> MemWrite<span class="op">,</span> MemRead<span class="op">,</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">input</span> <span class="op">[</span><span class="dv">31</span><span class="op">:</span><span class="dv">0</span><span class="op">]</span> address<span class="op">,</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">input</span> <span class="op">[</span><span class="dv">31</span><span class="op">:</span><span class="dv">0</span><span class="op">]</span> write_data<span class="op">,</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">output</span> <span class="op">[</span><span class="dv">31</span><span class="op">:</span><span class="dv">0</span><span class="op">]</span> read_data</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="op">);</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="dt">reg</span> <span class="op">[</span><span class="dv">31</span><span class="op">:</span><span class="dv">0</span><span class="op">]</span> memory <span class="op">[</span><span class="dv">0</span><span class="op">:</span><span class="dv">31</span><span class="op">];</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="kw">always</span> <span class="op">@(</span><span class="kw">posedge</span> clk<span class="op">)</span> <span class="kw">begin</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> <span class="op">(</span>MemWrite<span class="op">)</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>        memory<span class="op">[</span>address<span class="op">[</span><span class="dv">6</span><span class="op">:</span><span class="dv">2</span><span class="op">]]</span> <span class="op">&lt;=</span> write_data<span class="op">;</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
 <span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a><span class="kw">always</span> <span class="op">@(</span><span class="kw">posedge</span> clk<span class="op">)</span> <span class="kw">begin</span></span>
-<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> <span class="op">(</span>MemWrite<span class="op">)</span></span>
-<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>        memory<span class="op">[</span>address<span class="op">[</span><span class="dv">6</span><span class="op">:</span><span class="dv">2</span><span class="op">]]</span> </span>
-<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>            <span class="op">&lt;=</span> write_data<span class="op">;</span></span>
-<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
-<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a><span class="kw">endmodule</span></span></code></pre></div>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a><span class="kw">assign</span> read_data <span class="op">=</span> MemRead <span class="op">?</span> memory<span class="op">[</span>address<span class="op">[</span><span class="dv">6</span><span class="op">:</span><span class="dv">2</span><span class="op">]]</span> <span class="op">:</span> <span class="bn">32&#39;b0</span><span class="op">;</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a><span class="kw">endmodule</span></span></code></pre></div>
 </div>
 </div>
 </section>
@@ -474,15 +491,15 @@ execution</figcaption>
 <div class="split">
 <section id="add-instruction-trace" class="left-panel">
 <h3>ADD Instruction Trace</h3>
-<p><strong>All stages in ONE cycle:</strong></p>
-<ol type="1">
-<li><strong>Fetch</strong>: Load instr from mem</li>
-<li><strong>Decode</strong>: Opcode (ADD), regs</li>
-<li><strong>Execute</strong>: ALU: 5 + 3</li>
-<li><strong>Memory</strong>: No load/store</li>
-<li><strong>Write-back</strong>: R3 ← 8</li>
-</ol>
-<p><strong>Total time: 1 clock cycle ✓</strong></p>
+<p><strong>One instruction, one clock cycle:</strong></p>
+<ul>
+<li><strong>Fetch</strong>: instruction loaded from PC</li>
+<li><strong>Decode</strong>: R1, R2, and R3 selected</li>
+<li><strong>Execute</strong>: ALU computes <code>5 + 3 = 8</code></li>
+<li><strong>Write-back</strong>: R3 receives the result</li>
+</ul>
+<p><strong>No memory access needed.</strong> <strong>Total time: 1 clock
+cycle ✓</strong></p>
 </section>
 <div class="right-panel">
 <pre><code>INSTRUCTION: ADD R3, R1, R2 (opcode=110001)
@@ -500,6 +517,91 @@ execution</figcaption>
 └─────────────────────────────┘
 
 After Cycle 1: R3 = 8 ✓</code></pre>
+</div>
+</div>
+</section>
+<section class="slide level1">
+
+<h2 id="execution-example-beq">Execution Example: BEQ</h2>
+<div class="split">
+<section id="branch-if-equal" class="left-panel">
+<h3>Branch If Equal</h3>
+<ul>
+<li>Compare two registers in the ALU</li>
+<li>If <code>Zero = 1</code>, branch target is chosen</li>
+<li>If not equal, PC moves to <code>PC + 4</code></li>
+</ul>
+<p><strong>Control idea:</strong>
+<code>PCSrc = Branch &amp; Zero</code></p>
+</section>
+<div class="right-panel">
+<pre><code>BEQ R1, R2, label
+
+PC = 0x00001000
+R1 = 7, R2 = 7
+
+ALU compares R1 - R2
+Zero = 1
+Branch target = 0x00001020
+
+PCSrc = 1
+Next PC = 0x00001020</code></pre>
+</div>
+</div>
+</section>
+<section class="slide level1">
+
+<h2 id="execution-example-sw">Execution Example: SW</h2>
+<div class="split">
+<section id="store-word" class="left-panel">
+<h3>Store Word</h3>
+<ul>
+<li>Base register plus immediate gives the address</li>
+<li>Data comes from the second register</li>
+<li>Memory writes on the clock edge</li>
+</ul>
+<p><strong>Control idea:</strong> <code>MemWrite = 1</code></p>
+</section>
+<div class="right-panel">
+<pre><code>SW R2, 4(R1)
+
+R1 = 0x00001000
+R2 = 42
+
+Address = R1 + 4 = 0x00001004
+MemWrite = 1
+Memory[0x00001004] &lt;- 42
+
+PC &lt;- PC + 4</code></pre>
+</div>
+</div>
+</section>
+<section class="slide level1">
+
+<h2 id="execution-example-lw">Execution Example: LW</h2>
+<div class="split">
+<section id="load-word" class="left-panel">
+<h3>Load Word</h3>
+<ul>
+<li>Address comes from base register plus offset</li>
+<li>Data is read from memory</li>
+<li>Register file writes the loaded value back</li>
+</ul>
+<p><strong>Control idea:</strong> <code>MemRead = 1</code>,
+<code>MemtoReg = 1</code></p>
+</section>
+<div class="right-panel">
+<pre><code>LW R3, 4(R1)
+
+R1 = 0x00001000
+
+Address = R1 + 4 = 0x00001004
+Memory[0x00001004] = 42
+
+MemRead = 1
+R3 &lt;- 42
+
+PC &lt;- PC + 4</code></pre>
 </div>
 </div>
 </section>
@@ -569,41 +671,38 @@ stage</p>
 </ul>
 </div>
 <div class="right-panel">
-<pre><code>Pipeline Timeline (Single-Cycle):
+<pre><code>Critical Path Diagram:
 
-Instruction  Timing
-────────────────────────
-I1: Fetch    Decode   Exec  Mem  WB
-I2:          Fetch    Decode Exec Mem  WB
-I3:                   Fetch Decode Exec Mem WB
+PC -&gt; IMEM -&gt; Decode -&gt; ALU -&gt; DMEM -&gt; WB
+IF     ID     EX      MEM    WB
 
-Cycle #:     1        2      3    4    5
+Clock period must cover the slowest path:
 
-Each instruction
-takes 5 cycles minimum</code></pre>
+Tclk = IF + ID + EX + MEM + WB
+
+That is why every instruction pays the cost of the longest operation.</code></pre>
 </div>
 </div>
-<p>::: :::</p>
 </section>
 <section class="slide level1">
 
 <section id="summary" class="conclusion">
 <h2>Summary</h2>
 <p class="conclusion-item">
-<strong>Architecture:</strong> Complete single-cycle RISC-V processor
-with all five pipeline stages in one clock cycle
+<p><strong>Architecture:</strong> Complete single-cycle RISC-V processor
+with all five pipeline stages in one clock cycle</p>
 </p>
 <p class="conclusion-item">
-<strong>Components:</strong> PC, instruction memory, control unit,
-register file, ALU, data memory
+<p><strong>Components:</strong> PC, instruction memory, control unit,
+register file, ALU, data memory</p>
 </p>
 <p class="conclusion-item">
-<strong>Insight:</strong> Simple and elegant, but limited by critical
-path. Foundation for pipelined designs.
+<p><strong>Insight:</strong> Simple and elegant, but limited by critical
+path. Foundation for pipelined designs.</p>
 </p>
 <p class="conclusion-item">
-<strong>Next Steps:</strong> Pipeline architecture, hazard detection,
-cache design
+<p><strong>Next Steps:</strong> Pipeline architecture, hazard detection,
+cache design</p>
 </p>
 </section>
 </section>
