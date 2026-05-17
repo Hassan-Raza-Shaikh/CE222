@@ -13,7 +13,7 @@ initial begin
         memory[i] = 32'h00000000;
 
     // addi x1, x0, 5  (load 5 into x1)
-    memory[0]  = 32'h00500093;
+    memory[0]  = 32'h00350009;
 
     // addi x2, x0, 10 (load 10 into x2)
     memory[1]  = 32'h00A00113;
