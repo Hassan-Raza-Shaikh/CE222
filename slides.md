@@ -10,7 +10,7 @@ date: "2026-05-08"
 
 <p class="subtitle">
 
-Complete RISC-V inspired CPU executing any instruction in exactly one clock cycle
+RISC V Architecture
 
 </p>
 
